@@ -17,6 +17,7 @@ type webhooks struct {
 	events map[string]bool
 }
 
+// NewWebhooks initializes the webhooks with the port and the events that need to take care of
 func NewWebhooks(p int, events []string) *webhooks {
 	wh := &webhooks{
 		Port:   p,
@@ -30,17 +31,20 @@ func NewWebhooks(p int, events []string) *webhooks {
 	return wh
 }
 
+// AddEvent adds a new event to the regeistered events
 func (wh *webhooks) AddEvent(e string) {
 	if _, ok := wh.events[e]; !ok {
 		wh.events[e] = true
 	}
 }
 
+// HasEvent checks if an event is registered or not
 func (wh *webhooks) HasEvent(e string) bool {
 	_, ok := wh.events[e]
 	return ok
 }
 
+// Events returns all the events that are registered
 func (wh *webhooks) Events() (events []string) {
 	for e, _ := range wh.events {
 		events = append(events, e)
@@ -48,6 +52,7 @@ func (wh *webhooks) Events() (events []string) {
 	return
 }
 
+// Start starts the webhook server
 func (wh *webhooks) Start() {
 	http.HandleFunc("/", wh.eventHandle)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", wh.Port), nil))
