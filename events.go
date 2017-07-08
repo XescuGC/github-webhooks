@@ -2,7 +2,7 @@ package webhooks
 
 import "time"
 
-type projectCardEvent struct {
+type ProjectCardEvent struct {
 	Action  string `json:"action"`
 	Changes struct {
 		ColumnID struct {

@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	ProjectCards = make(chan projectCardEvent, 10)
+	ProjectCards = make(chan ProjectCardEvent, 10)
 )
 
 type webhooks struct {
@@ -81,7 +81,7 @@ func (wh *webhooks) eventHandle(w http.ResponseWriter, req *http.Request) {
 }
 
 func newProjectCardEvent(b []byte) error {
-	var pc projectCardEvent
+	var pc ProjectCardEvent
 	err := json.Unmarshal(b, &pc)
 	if err != nil {
 		return err
