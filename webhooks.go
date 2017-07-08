@@ -6,10 +6,12 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/google/go-github/github"
 )
 
 var (
-	ProjectCards = make(chan ProjectCardEvent, 10)
+	ProjectCards = make(chan *github.ProjectCardEvent, 10)
 )
 
 type webhooks struct {
@@ -81,11 +83,11 @@ func (wh *webhooks) eventHandle(w http.ResponseWriter, req *http.Request) {
 }
 
 func newProjectCardEvent(b []byte) error {
-	var pc ProjectCardEvent
+	var pc github.ProjectCardEvent
 	err := json.Unmarshal(b, &pc)
 	if err != nil {
 		return err
 	}
-	ProjectCards <- pc
+	ProjectCards <- &pc
 	return nil
 }
