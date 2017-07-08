@@ -6,7 +6,7 @@ import (
 )
 
 func TestAddEvent(t *testing.T) {
-	w := NewWebhooks(3000, nil)
+	w := New(3000, nil)
 	e := "test"
 	w.AddEvent(e)
 
@@ -16,7 +16,7 @@ func TestAddEvent(t *testing.T) {
 }
 
 func TestHasEvent(t *testing.T) {
-	w := NewWebhooks(3000, nil)
+	w := New(3000, nil)
 	e := "test"
 	w.AddEvent(e)
 
@@ -26,7 +26,7 @@ func TestHasEvent(t *testing.T) {
 }
 
 func TestEvents(t *testing.T) {
-	w := NewWebhooks(3000, nil)
+	w := New(3000, nil)
 	e := "test"
 	w.AddEvent(e)
 
@@ -35,8 +35,8 @@ func TestEvents(t *testing.T) {
 	}
 }
 
-func TestNewWebhooks(t *testing.T) {
-	w := NewWebhooks(3000, []string{"test"})
+func TestNew(t *testing.T) {
+	w := New(3000, []string{"test"})
 
 	if !reflect.DeepEqual(w.Events(), []string{"test"}) {
 		t.Errorf("Expected the list of events to be %v and found %v", []string{"test"}, w.Events())

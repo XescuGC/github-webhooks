@@ -17,8 +17,8 @@ type webhooks struct {
 	events map[string]bool
 }
 
-// NewWebhooks initializes the webhooks with the port and the events that need to take care of
-func NewWebhooks(p int, events []string) *webhooks {
+// New initializes the webhooks with the port and the events that need to take care of
+func New(p int, events []string) *webhooks {
 	wh := &webhooks{
 		Port:   p,
 		events: make(map[string]bool),
