@@ -60,6 +60,10 @@ func (wh *webhooks) eventHandle(w http.ResponseWriter, req *http.Request) {
 
 	e := req.Header.Get("X-GitHub-Event")
 
+	if !wh.HasEvent(e) {
+		return
+	}
+
 	b, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		log.Println(err)
