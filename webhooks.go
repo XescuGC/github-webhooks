@@ -15,13 +15,13 @@ var (
 	ProjectCards = make(chan *github.ProjectCardEvent, 10)
 )
 
-type webhooks struct {
+type Webhooks struct {
 	Port   int
 	events map[string]bool
 }
 
 // New initializes the webhooks with the port and the events that need to take care of
-func New(p int, events []string) *webhooks {
+func New(p int, events []string) *Webhooks {
 	wh := &webhooks{
 		Port:   p,
 		events: make(map[string]bool),
@@ -35,20 +35,20 @@ func New(p int, events []string) *webhooks {
 }
 
 // AddEvent adds a new event to the regeistered events
-func (wh *webhooks) AddEvent(e string) {
+func (wh *Webhooks) AddEvent(e string) {
 	if _, ok := wh.events[e]; !ok {
 		wh.events[e] = true
 	}
 }
 
 // HasEvent checks if an event is registered or not
-func (wh *webhooks) HasEvent(e string) bool {
+func (wh *Webhooks) HasEvent(e string) bool {
 	_, ok := wh.events[e]
 	return ok
 }
 
 // Events returns all the events that are registered
-func (wh *webhooks) Events() (events []string) {
+func (wh *Webhooks) Events() (events []string) {
 	for e, _ := range wh.events {
 		events = append(events, e)
 	}
@@ -56,12 +56,12 @@ func (wh *webhooks) Events() (events []string) {
 }
 
 // Start starts the webhook server
-func (wh *webhooks) Start() {
+func (wh *Webhooks) Start() {
 	http.HandleFunc("/", wh.eventHandle)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", wh.Port), nil))
 }
 
-func (wh *webhooks) eventHandle(w http.ResponseWriter, req *http.Request) {
+func (wh *Webhooks) eventHandle(w http.ResponseWriter, req *http.Request) {
 	if req.Method != "POST" {
 		return
 	}
