@@ -10,6 +10,7 @@ import (
 	"github.com/google/go-github/github"
 )
 
+// All the public channels where the evens that you have registered will be published
 var (
 	ProjectCards = make(chan *github.ProjectCardEvent, 10)
 )
