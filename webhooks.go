@@ -10,14 +10,11 @@ import (
 	"github.com/google/go-github/github"
 )
 
-// All the public channels where the evens that you have registered will be published
-var (
-	ProjectCards = make(chan *github.ProjectCardEvent, 10)
-)
-
 type Webhooks struct {
 	Port   int
 	events map[string]bool
+
+	projectCards chan *github.ProjectCardEvent
 }
 
 // New initializes the webhooks with the port and the events that need to take care of
@@ -25,6 +22,8 @@ func New(p int, events []string) *Webhooks {
 	wh := &Webhooks{
 		Port:   p,
 		events: make(map[string]bool),
+
+		projectCards: make(chan *github.ProjectCardEvent, 10),
 	}
 
 	for _, e := range events {
@@ -55,6 +54,10 @@ func (wh *Webhooks) Events() (events []string) {
 	return
 }
 
+func (wh *Webhooks) ProjectCards() <-chan *github.ProjectCardEvent {
+	return wh.projectCards
+}
+
 // Start starts the webhook server
 func (wh *Webhooks) Start() {
 	http.HandleFunc("/", wh.eventHandle)
@@ -79,16 +82,19 @@ func (wh *Webhooks) eventHandle(w http.ResponseWriter, req *http.Request) {
 
 	switch e {
 	case "project_card":
-		newProjectCardEvent(b)
+		err := wh.newProjectCardEvent(b)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 
-func newProjectCardEvent(b []byte) error {
+func (wh *Webhooks) newProjectCardEvent(b []byte) error {
 	var pc github.ProjectCardEvent
 	err := json.Unmarshal(b, &pc)
 	if err != nil {
 		return err
 	}
-	ProjectCards <- &pc
+	wh.projectCards <- &pc
 	return nil
 }
