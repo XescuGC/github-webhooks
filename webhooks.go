@@ -10,11 +10,14 @@ import (
 	"github.com/google/go-github/github"
 )
 
+// Webhooks defines the basic struct for configuring the Webhooks server
 type Webhooks struct {
-	Port   int
+	Port int
+
 	events map[string]bool
 
 	projectCards chan *github.ProjectCardEvent
+	issues       chan *github.IssuesEvent
 }
 
 // New initializes the webhooks with the port and the events that need to take care of
@@ -24,6 +27,7 @@ func New(p int, events []string) *Webhooks {
 		events: make(map[string]bool),
 
 		projectCards: make(chan *github.ProjectCardEvent, 10),
+		issues:       make(chan *github.IssuesEvent, 10),
 	}
 
 	for _, e := range events {
@@ -54,9 +58,11 @@ func (wh *Webhooks) Events() (events []string) {
 	return
 }
 
-func (wh *Webhooks) ProjectCards() <-chan *github.ProjectCardEvent {
-	return wh.projectCards
-}
+// ProjectCards defines the public channel to listen for *github.ProjectCardEvent
+func (wh *Webhooks) ProjectCards() <-chan *github.ProjectCardEvent { return wh.projectCards }
+
+// Issues defines the public channel to listen for *github.IssuesEvent
+func (wh *Webhooks) Issues() <-chan *github.IssuesEvent { return wh.issues }
 
 // Start starts the webhook server
 func (wh *Webhooks) Start() {
@@ -65,6 +71,7 @@ func (wh *Webhooks) Start() {
 }
 
 func (wh *Webhooks) eventHandle(w http.ResponseWriter, req *http.Request) {
+	var err error
 	if req.Method != "POST" {
 		return
 	}
@@ -78,23 +85,37 @@ func (wh *Webhooks) eventHandle(w http.ResponseWriter, req *http.Request) {
 	b, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		log.Println(err)
+		return
 	}
 
 	switch e {
 	case "project_card":
-		err := wh.newProjectCardEvent(b)
-		if err != nil {
-			log.Println(err)
-		}
+		err = wh.newProjectCardEvent(b)
+	case "issues":
+		err = wh.newIssuesEvent(b)
+	}
+
+	if err != nil {
+		log.Println(err)
 	}
 }
 
 func (wh *Webhooks) newProjectCardEvent(b []byte) error {
-	var pc github.ProjectCardEvent
-	err := json.Unmarshal(b, &pc)
+	var e github.ProjectCardEvent
+	err := json.Unmarshal(b, &e)
 	if err != nil {
 		return err
 	}
-	wh.projectCards <- &pc
+	wh.projectCards <- &e
+	return nil
+}
+
+func (wh *Webhooks) newIssuesEvent(b []byte) error {
+	var e github.IssuesEvent
+	err := json.Unmarshal(b, &e)
+	if err != nil {
+		return err
+	}
+	wh.issues <- &e
 	return nil
 }
